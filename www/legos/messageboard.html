@@ -1,0 +1,32 @@
+{{define "messages"}}
+{{if .}}
+<ul id="messages">
+  {{range $id, $message := .}}
+  <li><label class="blue">{{$message.Author}}: </label>{{$message.Msg}}</li>
+  {{end}}
+</ul>
+{{end}}
+{{end}}
+
+{{define "messageboard"}}
+{{if .}}
+<div id="message-container">
+  <div id="message-log" hx-get="/messages" hx-trigger="every 1s" hx-target="#messages">
+  <!-- <div id="message-log" hx-get="/messages" hx-trigger="load" hx-target="#messages"> -->
+    {{template "messages" .Messages}}
+  </div>
+  {{if .User.Id}}
+  <form id="message-input" class="form-input">
+    <label>
+      <span class="blue">{{.User.Name}}</span>
+       @ 
+      <span class="yellow">home</span>
+    </label>
+    <label>&nbsp;&gt;&gt;</label>
+    <input autofocus id="message-input" type="text" name="message" placeholder="*tap,tap,tap*" />
+    <button hx-post="/message" hx-target="#message-container" hx-swap="outerHTML"><span>[</span>###<span>]</span></button>
+  </form>
+  {{end}}
+</div>
+{{end}}
+{{end}}

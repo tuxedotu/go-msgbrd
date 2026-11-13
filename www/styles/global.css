@@ -1,0 +1,381 @@
+/* general */
+html {
+  height: 100%;
+  cursor: default;
+}
+body {
+  font-family: "JetBrains Mono";
+  font-weight: 400; 
+  background-color: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+::selection {
+  background-color: var(--bg);
+  color: var(--purple);
+}
+
+#main-body {
+  padding: 30px 30px 10px 30px;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: auto;
+}
+
+#login-body {
+  padding: 30px;
+  height: 100%;
+}
+
+.loginbar-body {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+
+  & > h2 > b {
+    font-style: italic;
+
+    &::before {
+      content: "##!>";
+      font-style: normal;
+    }
+  }
+}
+
+#loginbar {
+  margin-top: 0;
+}
+
+/* headings */
+h1 {
+  font-size: 22pt;
+  color: var(--red);
+  margin: 0;
+  flex-shrink: 0;
+
+  &::before {
+    content: "#";
+    padding-right: 20px;
+    color: var(--bg3);
+  }
+}
+
+h2 {
+  color: var(--green);
+  font-size: 16pt;
+  margin: 10px 0;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  & > b::before {
+    content: "##";
+    padding-right: 20px;
+    color: var(--bg3);
+  }
+
+  & > span {
+    font-size: 14pt;
+  }
+}
+
+h2 > span.comment {
+  margin-left: 40px;
+}
+
+/* generic elements */
+hr {
+  /* width: 3em; */
+  margin: 10px 0 10px 0;
+  border: 2px dashed var(--bg3) ;
+  flex-shrink: 0;
+
+  /* &::before { */
+  /*   content: "~ ~ ~"; */
+  /*   font-weight: 900; */
+  /*   color: var(--bg3); */
+  /* } */
+}
+
+input {
+  font-family: inherit;
+  padding: 0 10px 0 10px;
+  border: none;
+  background-color: transparent;
+  color: var(--fg);
+  font-size: 12pt;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+button {
+  font-family: inherit;
+  font-size: 12pt;
+  font-weight: 600;
+  border: none;
+  color: var(--green);
+  background-color: transparent;
+  cursor: pointer;
+
+  padding: 0 7px;
+  margin-top: 5px;
+
+  transition: .1s ease;
+  &:hover, &:focus {
+    outline: none;
+    color: var(--purple);
+    translate: 0 -2px;
+  }
+}
+
+label {
+  font-weight: bold;
+}
+
+ul {
+  font-size: 12pt;
+  padding-left: 0;
+  list-style-type: none;
+
+  & > li > label {
+    font-weight: 600;
+    user-select: none;
+  }
+  & > li::before {
+    content: ">";
+    color: var(--bg3);
+    margin-right: 13px;
+  }
+}
+
+
+/* named elements */
+.error-label {
+  font-size: 12pt;
+  color: var(--orange);
+}
+#login-error {
+  margin-top: 15px;
+}
+
+.comment {
+  color: var(--bg3);
+  user-select: none;
+}
+
+.submit {
+  background-image: url('../assets/angle-up-solid.svg');
+  width: 20%;
+}
+
+/* nav block */
+#navbar {
+  font-size: 14pt;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+}
+
+#navbar > a, #navbar > div > a {
+  color: var(--yellow);
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: 600;
+
+  transition: .1s ease;
+  &:hover, &:focus {
+    outline: none;
+    translate: 0 -2px;
+    color: var(--purple-dim)
+  }
+
+  & > span {
+    color: var(--fg);
+    font-weight: 400;
+  }
+}
+
+#navbar > div {
+  /* flex: 1; */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  &:hover {
+    hr {
+      border: 2px dashed var(--fg);
+    }
+    a {
+      color: var(--fg) !important;
+      margin-top: -7px;
+    }
+  }
+}
+
+#navbar > hr {
+  flex: 1;
+  position: relative;
+  height: 0;
+  border: 2px dashed var(--bg3);
+  margin: 0 10px 0 20px;
+}
+
+/* message-container */
+#message-container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-width: 800px;
+  border: 2px dotted var(--bg2);
+  border-radius: 5px;
+}
+
+#message-log {
+  overflow: auto;
+  scroll-snap-type: y mandatory;
+  margin: 5px 0 0 5px;
+}
+
+#message-log > ul {
+  scroll-snap-align: end;
+  font-size: 12pt;
+  list-style-position: outside;
+}
+
+.form-input {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12pt;
+  border-top: 2px dotted var(--bg2);
+  border-radius: 5px;
+  padding: 0 10px;
+}
+
+.form-input > label:nth-child(2) {
+  color: var(--bg2);
+}
+
+.form-input > input {
+  margin: 0;
+  flex: 1;
+  padding: 10px;
+  font-size: 12pt;
+  cursor: default;
+  border: none;
+  color: var(--fg);
+}
+
+.form-input > button {
+  color: var(--red);
+  font-size: 14pt;
+  font-weight: 900;
+  text-shadow: 5px 5px black;
+  padding: 0;
+  margin: 0;
+  margin-right: auto;
+  flex: 0;
+  
+  & > span {
+    font-weight: 400;
+    color: var(--bg3);
+    text-shadow: none;
+    margin: 0;
+    padding: 5px;
+    cursor: default !important;
+  }
+
+  transition: .1s ease;
+  &:hover, &:focus {
+    outline: none;
+    color: var(--purple-dim);
+    cursor: pointer;
+    translate: 0 -2px;
+  }
+}
+
+/* css helpers */
+.hide-sm {
+  display: inherit;
+}
+
+.hide-lg {
+  display: none;
+}
+
+/* mobile adaption - caus why tf not at this point lmao  */
+@media screen and (max-width: 670px) {
+  /* css helpers */
+  .hide-sm {
+    display: none;
+  }
+  .hide-lg {
+    display: inherit;
+  }
+
+  /* generics  */
+  h1 {
+    font-size: 16pt;
+  }
+  h2 {
+    font-size: 14pt;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    
+    & > span {
+      margin: 15px auto auto auto;
+    }
+  }
+
+  hr {
+    margin: 3px 0;
+  }
+
+  ul {
+    font-size: 12pt;
+  }
+
+  /* specifics */
+  #navbar {
+    font-size: 12pt;
+  }
+
+  #message-container > h2 {
+    margin: 0;
+    margin-bottom: 8px;
+
+    & > span.comment {
+      margin: 10px auto 0 auto;
+    }
+  }
+
+  .form-input {
+    justify-content: space-between;
+
+    & > label:first-child {
+      display: none;
+    }
+
+    & > input {
+      flex: 1;
+      padding: 5px 10px;
+    }
+
+    & > button > span {
+      display: none;
+    }
+  }
+}

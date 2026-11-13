@@ -1,0 +1,11 @@
+{{define "nav"}}
+<div id="navbar">
+  <hr />
+  <a href="/"><span>A: </span>home</a>
+  {{if .Name}}
+    <a autofocus href="/myspace"><span>B: </span>
+      {{printf "%s's space" .Name}}
+    </a>
+  {{end}}
+</div>
+{{end}}
