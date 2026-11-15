@@ -25,8 +25,10 @@ type session struct {
 	createdAt time.Time
 }
 
-// global variables -> TODO: convert to a lightweight sqlite setup potentially? 
+// global variables -> NOTE: convertable to a lightweight sqlite setup potentially? 
 var userCache = make(map[int]User)
 var sessionsCache = make(map[string]session)
 var messageCache = make(map[int]Message)
 var cacheMutex sync.RWMutex
+var messageChannels = []chan string{} // resizable array of active messageChannels
+var messageChannel = make(chan string)

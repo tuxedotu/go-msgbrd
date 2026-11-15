@@ -40,7 +40,7 @@ func prefillCaches() { //>> test data
 	messageCache[1] = Message{
 		Id:        1,
 		Author:    "admin",
-		Msg:       "feel free to pin sth on the messageboard :)",
+		Msg:       "feel free to join the messageboard! :)",
 		CreatedAt: time.Now(),
 	}
 }

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"os/exec"
+	"slices"
 	"time"
 )
 
@@ -184,11 +186,16 @@ func userPostsMessage(w http.ResponseWriter, r *http.Request) {
 	messageCache[postedMessage.Id] = postedMessage
 	templData.User = userCache[session.userId]
 	templData.Messages = messageCache
-	cacheMutex.Unlock()
-	fmt.Printf("- (postMsg) LOG: postedMessage = '%v'(u: %v)\n", postedMessage.Msg, templData.User.Name)
 
-	templ = template.Must(templ.ParseFiles("./www/legos/messageboard.html"))
-	templ.ExecuteTemplate(w, "messageboard", templData)
+	// send posted message as json to all currently connected / active channels 
+	if msgJson, err := json.Marshal(postedMessage); err == nil {
+		for _, c := range messageChannels {
+			c <- string(msgJson)
+		}
+	}
+	cacheMutex.Unlock()
+	fmt.Printf("- (postMsg) From: '%v' (u: '%v')\n\t++ postedMessage = '%v'\n", r.RemoteAddr, postedMessage.Author, postedMessage.Msg)
+	fmt.Printf("- (msg-stream) Sending new message to %d connected clients.\n", len(messageChannels))
 }
 
 func refreshMessages(w http.ResponseWriter, r *http.Request) {
@@ -197,24 +204,41 @@ func refreshMessages(w http.ResponseWriter, r *http.Request) {
 	tmpl.ExecuteTemplate(w, "messages", messageCache)
 }
 
-// Server-Sent Events -> hot reload on-demand instead of constant client-side pinging? yumyum
-func serverSentEventPing(w http.ResponseWriter, r *http.Request) {
+// Server-Sent Events -> on-demand message broadcasting instead of client-side hot pinging
+func serverSentMessagePing(w http.ResponseWriter, r *http.Request) {
+	// create new message channel for newly connecting client
+	var msgChannel = make(chan string)
+	cacheMutex.Lock()
+	messageChannels = append(messageChannels, msgChannel)
+	cacheMutex.Unlock()
+
 	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 	w.WriteHeader(http.StatusOK)
 
-	//forever loop
-	for {
-		select {
-		case <-r.Context().Done():
-			return
-		default:
-		}
+	// forever loop until client disconnects
+	if flusher, ok := w.(http.Flusher); ok {
+		fmt.Printf("- (msg-stream) Client: '%v' listening for messages...\n", r.RemoteAddr)
 
-		fmt.Fprintf(w, "data: ping\n\n")
-		if f, ok := w.(http.Flusher); ok {
-			f.Flush()
+		for {
+			select {
+				case <-r.Context().Done():
+					// on disconnect -> close channel and remove from listener-list 
+					cacheMutex.Lock()
+					var channelIndex = slices.Index(messageChannels, msgChannel)
+					messageChannels = slices.Delete(messageChannels, channelIndex, channelIndex+1)
+					cacheMutex.Unlock()
+					close(msgChannel)
+					fmt.Printf("- (msg-stream) Client '%v' closed his message channel.\n", r.RemoteAddr)
+					return
+				default:
+					msg := <-msgChannel // blocks until new message is available from channel
+					fmt.Fprintf(w, "data: %s\n\n", msg)
+					flusher.Flush()
+			}
 		}
-
-		time.Sleep(3 * time.Second)
+	} else {
+		fmt.Printf("- (msg-stream) Client: '%v' couldn't open message stream!\n\n", r.RemoteAddr)
 	}
 }

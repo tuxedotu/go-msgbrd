@@ -11,12 +11,11 @@
 {{define "messageboard"}}
 {{if .}}
 <div id="message-container">
-  <div id="message-log" hx-get="/messages" hx-trigger="every 1s" hx-target="#messages">
-  <!-- <div id="message-log" hx-get="/messages" hx-trigger="load" hx-target="#messages"> -->
+  <div id="message-log" hx-get="/messages" hx-trigger="load" hx-target="#messages">
     {{template "messages" .Messages}}
   </div>
   {{if .User.Id}}
-  <form id="message-input" class="form-input">
+  <form id="message-bar"> 
     <label>
       <span class="blue">{{.User.Name}}</span>
        @ 
@@ -24,9 +23,35 @@
     </label>
     <label>&nbsp;&gt;&gt;</label>
     <input autofocus id="message-input" type="text" name="message" placeholder="*tap,tap,tap*" />
-    <button hx-post="/message" hx-target="#message-container" hx-swap="outerHTML"><span>[</span>###<span>]</span></button>
+    <button hx-post="/message" hx-swap="none" hx-on::after-request="clearInput()">
+      <span>[</span>###<span>]</span>
+    </button>
   </form>
+  <!-- Server-Sent Events -> live message updates without hot-pinging -->
+  <script>
+    const es = new EventSource("http://localhost:8080/msg-channel");
+    es.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
+      const authorText = document.createTextNode(`${data.Author}: `);
+      const messageText = document.createTextNode(data.Msg);
+
+      const messagesUl = document.getElementById("messages");
+      const newMsgLi = document.createElement("li");
+      const newMsgAuthorLabel = document.createElement("label");
+      newMsgAuthorLabel.classList.add("blue");
+      newMsgAuthorLabel.appendChild(authorText);
+      newMsgLi.appendChild(newMsgAuthorLabel);
+      newMsgLi.appendChild(messageText);
+      messagesUl.appendChild(newMsgLi);
+    }
+
+    function clearInput() {
+      document.getElementById("message-input").value = "";
+    }
+  </script>
   {{end}}
 </div>
+
 {{end}}
 {{end}}

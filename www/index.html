@@ -23,12 +23,5 @@
     </div>
     {{template "nav" .User}}
 
-    <!-- Server-Sent Event -> 'ping' example -->
-    <script>
-      const es = new EventSource("http://localhost:8080/ping");
-      es.onmessage = (event) => {
-        console.log(`Recieved: ${event.data}`);
-      }
-    </script>
   </body>
 </html>

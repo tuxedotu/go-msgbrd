@@ -19,7 +19,7 @@ func main() {
 	httpMultiplexer.HandleFunc("PUT /login", updateUser)          // hx-action
 	httpMultiplexer.HandleFunc("POST /message", userPostsMessage) // hx-action
 	httpMultiplexer.HandleFunc("GET /messages", refreshMessages)  // hx-action
-	httpMultiplexer.HandleFunc("GET /ping", serverSentEventPing)  // hx-action
+	httpMultiplexer.HandleFunc("GET /msg-channel", serverSentMessagePing)  // hx-action
 
 	fmt.Println("Listening on 'http://localhost:8080/':")
 	http.ListenAndServe(":8080", httpMultiplexer)
@@ -34,38 +34,35 @@ func serveWebpage(writer http.ResponseWriter, req *http.Request) {
 
 	/// routing ///
 	switch req.URL.Path {
-	case "/flextest":
-		tmpl = template.Must(template.ParseFiles("./www/flextest.html"))
+		case "/myspace":
+			tmpl = template.Must(template.ParseFiles(
+				"./www/space.html",
+				"./www/legos/nav.html",
+			))
+			cacheMutex.RLock()
+			data = userCache[userSession.userId]
+			cacheMutex.RUnlock()
 
-	case "/myspace":
-		tmpl = template.Must(template.ParseFiles(
-			"./www/space.html",
-			"./www/legos/nav.html",
-		))
-		cacheMutex.RLock()
-		data = userCache[userSession.userId]
-		cacheMutex.RUnlock()
+		case "/":
+			tmpl = template.Must(template.ParseFiles(
+				"./www/index.html",
+				"./www/legos/nav.html",
+				"./www/legos/messageboard.html",
+				"./www/legos/loginbar.html",
+			))
+			cacheMutex.RLock()
+			data = struct {
+				User     User
+				Messages map[int]Message
+			}{
+				User:     userCache[userSession.userId],
+				Messages: messageCache,
+			}
+			cacheMutex.RUnlock()
 
-	case "/":
-		tmpl = template.Must(template.ParseFiles(
-			"./www/index.html",
-			"./www/legos/nav.html",
-			"./www/legos/messageboard.html",
-			"./www/legos/loginbar.html",
-		))
-		cacheMutex.RLock()
-		data = struct {
-			User     User
-			Messages map[int]Message
-		}{
-			User:     userCache[userSession.userId],
-			Messages: messageCache,
-		}
-		cacheMutex.RUnlock()
-
-	default:
-		http.Redirect(writer, req, "/", http.StatusSeeOther)
-		return
+		default:
+			http.Redirect(writer, req, "/", http.StatusSeeOther)
+			return
 	}
 	fmt.Printf("- serving '%v' to client: %v\n", tmpl.Name(), req.RemoteAddr)
 	tmpl.Execute(writer, data)
